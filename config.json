@@ -1,0 +1,10 @@
+{
+    "theme": "Dark",
+    "default_country": "India",
+    "forecast_years": 5,
+    "confidence_threshold": 80,
+    "map_style": "Carto Dark",
+    "forecast_model": "Prophet / Trend Decomposition",
+    "ml_model": "Random Forest",
+    "show_probability": true
+}
