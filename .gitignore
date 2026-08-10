@@ -1,0 +1,31 @@
+data/globalterrorism.csv
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+
+# Large Datasets & Media
+data/*.csv
+*.csv
+*.sqlite3
+*.parquet
+
+# Python Bytecode & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Environment variables & secrets (API keys, passwords)
+.env
+.env.local
+
+# IDE & Editor Settings
+.vscode/
+.idea/
+*.swp
+
+# OS generated files
+.DS_Store
+Thumbs.db
