@@ -19,9 +19,7 @@ if not os.path.exists("models/attack_prediction_model.pkl"):
   )
   st.stop()
 
-model = joblib.load("models/attack_prediction_model.pkl")
-encoders = joblib.load("models/feature_encoders.pkl")
-target_encoder = joblib.load("models/target_encoder.pkl")
+pipeline = joblib.load("models/attack_prediction_model.pkl")
 
 df = load_data().dropna(
     subset=[
@@ -58,33 +56,23 @@ with st.form("prediction_form"):
         [1, 0],
         format_func=lambda x: "Yes" if x == 1 else "No",
     )
-
   submitted = st.form_submit_button("Execute Prediction Model")
 
 if submitted:
   try:
-    c_enc = encoders["country_txt"].transform([country])[0]
-    r_enc = encoders["region_txt"].transform([region])[0]
-    w_enc = encoders["weaptype1_txt"].transform([weapon])[0]
-    t_enc = encoders["targtype1_txt"].transform([target])[0]
-    g_enc = encoders["gname"].transform([group])[0]
-
     input_df = pd.DataFrame({
-        "country_txt": [c_enc],
-        "region_txt": [r_enc],
-        "weaptype1_txt": [w_enc],
-        "targtype1_txt": [t_enc],
-        "gname": [g_enc],
+        "country_txt": [country],
+        "region_txt": [region],
+        "weaptype1_txt": [weapon],
+        "targtype1_txt": [target],
+        "gname": [group],
         "success": [success],
         "suicide": [suicide],
     })
 
-    prediction = model.predict(input_df)
-    probs = model.predict_proba(input_df)
-
-    attack_type = target_encoder.inverse_transform(prediction)[0]
+    attack_type = pipeline.predict(input_df)[0]
+    probs = pipeline.predict_proba(input_df)
     confidence = probs.max() * 100
-
     st.subheader("Intelligence Assessment")
     st.success(f"Predicted Attack Vector: {attack_type}")
     st.metric("Model Confidence Score", f"{confidence:.2f}%")

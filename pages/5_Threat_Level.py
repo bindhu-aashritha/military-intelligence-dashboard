@@ -13,9 +13,7 @@ if not os.path.exists("models/threat_level_model.pkl"):
   st.error("Model files missing. Please run `python train_models.py` offline first.")
   st.stop()
 
-model = joblib.load("models/threat_level_model.pkl")
-encoders = joblib.load("models/threat_encoders.pkl")
-target_encoder = joblib.load("models/threat_target_encoder.pkl")
+pipeline = joblib.load("models/threat_level_model.pkl")
 
 df = load_data()
 
@@ -42,25 +40,18 @@ nwound = st.sidebar.number_input("Estimated Injured", 0, 10000, 0)
 
 if st.sidebar.button("Compute Threat Index"):
   try:
-    c_enc = encoders["country_txt"].transform([country])[0]
-    r_enc = encoders["region_txt"].transform([region])[0]
-    a_enc = encoders["attacktype1_txt"].transform([attack])[0]
-    w_enc = encoders["weaptype1_txt"].transform([weapon])[0]
-    t_enc = encoders["targtype1_txt"].transform([target])[0]
-
     input_df = pd.DataFrame({
-        "country_txt": [c_enc],
-        "region_txt": [r_enc],
-        "attacktype1_txt": [a_enc],
-        "weaptype1_txt": [w_enc],
-        "targtype1_txt": [t_enc],
+        "country_txt": [country],
+        "region_txt": [region],
+        "attacktype1_txt": [attack],
+        "weaptype1_txt": [weapon],
+        "targtype1_txt": [target],
         "nkill": [nkill],
         "nwound": [nwound],
     })
 
-    pred = model.predict(input_df)
-    probs = model.predict_proba(input_df)[0]
-    result = target_encoder.inverse_transform(pred)[0]
+    result = pipeline.predict(input_df)[0]
+    probs = pipeline.predict_proba(input_df)[0]
     confidence = probs.max() * 100
 
     st.subheader("Computed Threat Level Result")
@@ -76,10 +67,9 @@ if st.sidebar.button("Compute Threat Index"):
 
     if st.session_state.get("show_probability", True):
       st.subheader("Threat Probability Distribution")
-      prob_df = pd.DataFrame({
-          "Threat Class": target_encoder.classes_,
-          "Probability": probs,
-      })
+      prob_df = pd.DataFrame(
+          {"Threat Class": pipeline.classes_, "Probability": probs}
+      )
       st.bar_chart(prob_df.set_index("Threat Class"))
 
   except Exception as e:
