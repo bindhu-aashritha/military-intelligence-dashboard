@@ -4,6 +4,7 @@ import pandas as pd
 import streamlit as st
 from utils.config import init_session_state
 from utils.data_loader import load_data
+import plotly.express as px #Imported Plotly for feature importance chart
 
 init_session_state()
 
@@ -77,5 +78,41 @@ if submitted:
     st.success(f"Predicted Attack Vector: {attack_type}")
     st.metric("Model Confidence Score", f"{confidence:.2f}%")
 
+    # Model Explainability / Feature Importance Section
+    st.markdown("---")
+    st.subheader("Model Decision Drivers (Feature Importance)")
+
+    # Extract model and feature names from the Pipeline
+    rf_model = pipeline.named_steps["classifier"]
+    feature_names = [
+        "Country",
+        "Region",
+        "Weapon",
+        "Target",
+        "Faction",
+        "Success",
+        "Suicide",
+    ]
+    importances = rf_model.feature_importances_
+
+    fi_df = (
+        pd.DataFrame(
+            {"Feature": feature_names, "Importance (%)": importances * 100}
+        )
+        .sort_values(by="Importance (%)", ascending=True)
+    )
+
+    fig_fi = px.bar(
+        fi_df,
+        x="Importance (%)",
+        y="Feature",
+        orientation="h",
+        template="plotly_dark",
+        color="Importance (%)",
+        color_continuous_scale="Blues",
+        title="Tactical Feature Decision Weights",
+    )
+    st.plotly_chart(fig_fi, use_container_width=True)
+    
   except Exception as e:
     st.error(f"Error executing model: {str(e)}")

@@ -4,6 +4,7 @@ import pandas as pd
 import streamlit as st
 from utils.config import init_session_state
 from utils.data_loader import load_data
+import plotly.express as px
 
 init_session_state()
 
@@ -71,6 +72,41 @@ if st.sidebar.button("Compute Threat Index"):
           {"Threat Class": pipeline.classes_, "Probability": probs}
       )
       st.bar_chart(prob_df.set_index("Threat Class"))
+
+    #Model Explainability Feature Importance Graph
+    st.markdown("---")
+    st.subheader("Risk Contribution Analysis (Feature Importance)")
+
+    rf_model = pipeline.named_steps["classifier"]
+    feature_names = [
+        "Country",
+        "Region",
+        "Attack Type",
+        "Weapon",
+        "Target",
+        "Fatalities",
+        "Injured",
+    ]
+    importances = rf_model.feature_importances_
+
+    fi_df = (
+        pd.DataFrame(
+            {"Feature": feature_names, "Importance (%)": importances * 100}
+        )
+        .sort_values(by="Importance (%)", ascending=True)
+    )
+
+    fig_fi = px.bar(
+        fi_df,
+        x="Importance (%)",
+        y="Feature",
+        orientation="h",
+        template="plotly_dark",
+        color="Importance (%)",
+        color_continuous_scale="Reds",
+        title="Threat Index Parameter Weightings",
+    )
+    st.plotly_chart(fig_fi, use_container_width=True)
 
   except Exception as e:
     st.error(f"Prediction Pipeline Error: {str(e)}")

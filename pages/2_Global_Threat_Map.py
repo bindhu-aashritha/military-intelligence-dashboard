@@ -10,6 +10,11 @@ st.title("Global Threat Map")
 df = load_data()
 
 st.sidebar.header("Map Configurations")
+#Added Map View Mode selector (Scatter vs. Density Mapbox)
+map_view_type = st.sidebar.radio(
+    "Select Visualization Mode",
+    ["Scatter Map (Events)", "Density Map (Hotspots)"],
+)
 
 year = st.sidebar.selectbox(
     "Select Year", ["All"] + sorted(df["iyear"].unique().tolist(), reverse=True)
@@ -29,7 +34,9 @@ selected_style = style_map.get(
     st.session_state.get("map_style", "Carto Dark"), "carto-darkmatter"
 )
 
-fig = px.scatter_mapbox(
+#Conditional map rendering based on selected mode
+if map_view_type == "Scatter Map (Events)":
+   fig = px.scatter_mapbox(
     map_df,
     lat="latitude",
     lon="longitude",
@@ -39,8 +46,25 @@ fig = px.scatter_mapbox(
     zoom=1,
     height=700,
     mapbox_style=selected_style,
-    title=f"Geospatial Attack Distribution ({'All Years' if year == 'All' else year})",
+    title=(f"Geospatial Attack Distribution ({'All Years' if year == 'All' else year})",
+    ),
 )
+else:
+  #Density Mapbox hotspot visualization
+  fig = px.density_mapbox(
+      map_df,
+      lat="latitude",
+      lon="longitude",
+      z="nkill",  # Weighted by fatality impact
+      radius=10,
+      zoom=1,
+      height=700,
+      mapbox_style=selected_style,
+      title=(
+          f"Threat Density & Hotspot Assessment ({'All Years' if year == 'All' else year})"
+      ),
+  )
+
 fig.update_layout(margin=dict(l=0, r=0, t=40, b=0))
 
 st.plotly_chart(fig, use_container_width=True)
