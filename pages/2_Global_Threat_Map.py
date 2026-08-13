@@ -46,8 +46,7 @@ if map_view_type == "Scatter Map (Events)":
     zoom=1,
     height=700,
     mapbox_style=selected_style,
-    title=(f"Geospatial Attack Distribution ({'All Years' if year == 'All' else year})",
-    ),
+    title=f"Geospatial Attack Distribution ({'All Years' if year == 'All' else year})",
 )
 else:
   #Density Mapbox hotspot visualization

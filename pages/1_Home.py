@@ -5,7 +5,7 @@ from utils.data_loader import load_data
 
 init_session_state()
 
-st.title("Executive Overview")
+st.title("Overview")
 
 df = load_data()
 
